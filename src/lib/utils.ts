@@ -14,3 +14,7 @@ export function getEnvNumber(name: string): number {
 	}
 	return num;
 }
+
+export function getOptionalEnv(name: string): string | undefined {
+	return process.env[name] ?? undefined;
+}

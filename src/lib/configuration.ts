@@ -1,4 +1,4 @@
-import { getEnv, getEnvNumber } from '@/lib/utils';
+import { getEnv, getEnvNumber, getOptionalEnv } from '@/lib/utils';
 
 export interface BaseConfiguration {
 	host: string;
@@ -19,6 +19,7 @@ export interface DatabaseConfiguration extends BaseConfiguration {
 
 export interface PostgresConfiguration extends DatabaseConfiguration {
 	database: string;
+	databaseUrl?: string;
 }
 
 export type RedisConfiguration = BaseConfiguration;
@@ -39,6 +40,7 @@ function loadConfiguration(): Configuration {
 		},
 		postgres: {
 			database: getEnv('POSTGRES_DB'),
+			databaseUrl: getOptionalEnv('DATABASE_URL'),
 			host: getEnv('POSTGRES_HOST'),
 			password: getEnv('POSTGRES_PASSWORD'),
 			port: getEnvNumber('POSTGRES_PORT'),
