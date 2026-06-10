@@ -3,8 +3,8 @@ import express from 'express';
 import { config } from '@/lib/configuration';
 import { connectMongoose } from '@/lib/database/mongoose';
 import { prisma } from '@/lib/database/prisma';
-import { errorHandler } from '@/lib/errors/error';
 import { getLogger } from '@/lib/logging/logger';
+import { errorHandler } from '@/middleware/errorHandler';
 
 const app = express();
 const port = config.server.port;
