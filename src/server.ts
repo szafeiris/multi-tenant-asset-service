@@ -1,15 +1,17 @@
 import express from 'express';
 
-import { config } from './lib/configuration';
+import { config } from '@/lib/configuration';
+import { getLogger } from '@/lib/logging/logger';
 
 const app = express();
 const port = config.server.port;
+const logger = getLogger();
 
 app.get('/', (req, res) => {
 	res.send('Hello World!');
-	console.log('Response sent');
+	logger.info('Response sent');
 });
 
 app.listen(port, () => {
-	console.log(`App listening on port ${port.toString()}`);
+	logger.info(`App listening on port ${port.toString()}`);
 });

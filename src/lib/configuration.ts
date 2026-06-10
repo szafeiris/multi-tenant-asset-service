@@ -24,6 +24,8 @@ export interface PostgresConfiguration extends DatabaseConfiguration {
 export type RedisConfiguration = BaseConfiguration;
 
 export interface ServerConfiguration {
+	logLevel: string;
+	logPath: string;
 	port: number;
 }
 
@@ -47,6 +49,8 @@ function loadConfiguration(): Configuration {
 			port: getEnvNumber('REDIS_PORT'),
 		},
 		server: {
+			logLevel: getEnv('LOG_LEVEL'),
+			logPath: getEnv('LOG_PATH'),
 			port: getEnvNumber('PORT'),
 		},
 	};
