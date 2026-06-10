@@ -1,6 +1,7 @@
 import express from 'express';
 
 import { config } from '@/lib/configuration';
+import { connectMongoose } from '@/lib/database/mongoose';
 import { prisma } from '@/lib/database/prisma';
 import { errorHandler } from '@/lib/errors/error';
 import { getLogger } from '@/lib/logging/logger';
@@ -18,6 +19,7 @@ app.use(errorHandler);
 
 async function startServer() {
 	try {
+		await connectMongoose();
 		await prisma.$connect();
 		logger.info('Connected to the database');
 

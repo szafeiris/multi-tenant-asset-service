@@ -13,12 +13,12 @@ export interface Configuration {
 }
 
 export interface DatabaseConfiguration extends BaseConfiguration {
+	database: string;
 	password: string;
 	user: string;
 }
 
 export interface PostgresConfiguration extends DatabaseConfiguration {
-	database: string;
 	databaseUrl?: string;
 }
 
@@ -33,6 +33,7 @@ export interface ServerConfiguration {
 function loadConfiguration(): Configuration {
 	return {
 		mongo: {
+			database: getEnv('MONGO_DB'),
 			host: getEnv('MONGO_HOST'),
 			password: getEnv('MONGO_INITDB_ROOT_PASSWORD'),
 			port: getEnvNumber('MONGO_PORT'),
