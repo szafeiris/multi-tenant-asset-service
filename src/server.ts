@@ -1,7 +1,9 @@
 import express from 'express';
 
+import { config } from './lib/configuration';
+
 const app = express();
-const port = process.env.PORT ?? '9001';
+const port = config.server.port;
 
 app.get('/', (req, res) => {
 	res.send('Hello World!');
@@ -9,5 +11,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-	console.log(`Example app listening on port ${port}`);
+	console.log(`App listening on port ${port.toString()}`);
 });
