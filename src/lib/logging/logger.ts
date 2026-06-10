@@ -5,7 +5,20 @@ import { config } from '@/lib/configuration';
 
 const logFormat = winston.format.combine(
 	winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-	winston.format.printf((info) => `${info.timestamp as string} [${info.level}]: ${info.message as string}`),
+	winston.format.printf((info) => {
+		const contextStr = info.context ? ` [${info.context as string}]` : '';
+		return `${info.timestamp as string} [${info.level}]${contextStr}: ${info.message as string}`;
+	}),
+);
+
+const auditFormat = winston.format.combine(
+	winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+	winston.format.printf((info) => `${info.timestamp as string}: ${info.message as string}`),
+);
+
+const auditConsoleFormat = winston.format.combine(
+	winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+	winston.format.printf((info) => `\x1b[36m${info.timestamp as string}: ${info.message as string}\x1b[39m`),
 );
 
 const baseRotateOptions = {
@@ -37,6 +50,10 @@ const consoleTransport = new winston.transports.Console({
 	format: winston.format.combine(winston.format.colorize(), logFormat),
 });
 
+const auditConsoleTransport = new winston.transports.Console({
+	format: auditConsoleFormat,
+});
+
 const logger = winston.createLogger({
 	format: logFormat,
 	level: config.server.logLevel,
@@ -44,9 +61,9 @@ const logger = winston.createLogger({
 });
 
 const auditLogger = winston.createLogger({
-	format: logFormat,
+	format: auditFormat,
 	level: 'info',
-	transports: [auditTransport, consoleTransport],
+	transports: [auditTransport, auditConsoleTransport],
 });
 
 export function getAuditLogger() {
