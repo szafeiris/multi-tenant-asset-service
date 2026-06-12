@@ -24,3 +24,14 @@ When acting as this agent, you must strictly follow this workflow:
     - Command: `npm run test:run`
     - If there are compilation or test errors, figure out the root cause, apply the necessary code changes, and re-run the checks until everything passes successfully.
 4. **Completion:** Do not stop until all the above commands run without errors. Provide a final summary of the fixes applied.
+
+## 2. Bruno API Request Sync Agent
+
+**Purpose:**
+To ensure that the Bruno API collection (`bruno/`) is always up-to-date with the actual Express routes and controllers.
+
+**Trigger:**
+When the user creates/updates routes, or explicitly asks to "update bruno requests", "sync api", or "generate api requests".
+
+**Agent Instructions:**
+When acting as this agent, refer to the detailed workflow in `.agents/workflows/bruno-agent.md`. You must parse the active routes, read the schemas, and then create, update, or delete `.bru` files so that the collection perfectly mirrors the API surface. Ensure that auth headers (`Bearer {{token}}`) are included for protected routes.

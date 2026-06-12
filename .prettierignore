@@ -2,3 +2,6 @@ dist
 **/._*
 *.yml
 bruno/*
+.agents/*
+.gemini/*
+*.md
