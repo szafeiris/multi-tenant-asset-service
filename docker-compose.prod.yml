@@ -2,17 +2,13 @@ services:
   backend:
     container_name: mt-asset-service-backend
     image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-local}/multi-tenant-asset-service:latest
-    build:
-      context: .
-      target: development
     pull_policy: missing
     ports:
       - "5000:5000"
     volumes:
-      - .:/app
-      - /app/node_modules
+      - ./logs:/app/logs
     env_file:
-      - .env.development
+      - .env.production
     depends_on:
       - postgres
       - redis
@@ -24,7 +20,7 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - .env.development
+      - .env.production
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -42,7 +38,7 @@ services:
     ports:
       - "27017:27017"
     env_file:
-      - .env.development
+      - .env.production
     volumes:
       - mongodb_data:/data/db
       

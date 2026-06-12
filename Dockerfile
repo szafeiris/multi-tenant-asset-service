@@ -2,6 +2,8 @@
 FROM node:22-alpine AS base
 WORKDIR /app
 COPY package.json package-lock.json* ./
+COPY prisma ./prisma
+RUN mkdir logs
 RUN npm ci
 
 # Development stage
@@ -22,6 +24,6 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
-# The default production port or driven by .env.production
+
 EXPOSE 9001
 CMD ["npm", "run", "start"]
