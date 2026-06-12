@@ -1,53 +1,59 @@
-import express from 'express';
+import express, { Express } from 'express';
+import { Logger } from 'winston';
 
+import createControllers, { Controllers } from '@/controllers';
 import { config } from '@/lib/configuration';
 import { connectMongoose } from '@/lib/database/mongoose';
 import { prisma } from '@/lib/database/prisma';
 import { getLogger } from '@/lib/logging/logger';
 import { errorHandler } from '@/middleware/errorHandler';
-import { tenantIsolationMiddleware } from '@/middleware/tenantIsolationMiddleware';
+import { requestContextMiddleware } from '@/middleware/requestContextMiddleware';
+import { createRepositories, Repositories } from '@/repositories';
 import createRoutes from '@/routes';
+import createServices, { Services } from '@/services';
 
-const app = express();
-const port = config.server.port;
-const logger = getLogger();
+export class Application {
+	private readonly app: Express;
+	private readonly controllers: Controllers;
+	private readonly logger: Logger;
+	private readonly port: number;
+	private readonly repositories: Repositories;
 
-app.use(express.json());
+	private readonly services: Services;
 
-app.get('/', (req, res) => {
-	res.send('Hello World!');
-	logger.info('Response sent');
-});
+	public constructor(port: number = config.server.port) {
+		this.port = port;
+		this.logger = getLogger('application');
+		this.app = express();
 
-// A placeholder mock auth middleware to inject req.user until real JWT auth is built
-const mockAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-	(req as any).user = {
-		tenantId: '00000000-0000-0000-0000-000000000000', // Mock valid UUID for testing
-		role: 'admin',
-	};
-	next();
-};
+		this.app.use(express.json());
+		this.app.use(requestContextMiddleware);
 
-const apiRouter = express.Router();
-apiRouter.use(mockAuth, tenantIsolationMiddleware);
-createRoutes(apiRouter);
-app.use('/api', apiRouter);
+		this.repositories = createRepositories();
+		this.services = createServices(this.repositories);
+		this.controllers = createControllers(this.services);
+		const appRouter = createRoutes(this.controllers);
 
-app.use(errorHandler);
+		this.app.use('/api', appRouter);
 
-async function startServer() {
-	try {
-		await connectMongoose();
-		await prisma.$connect();
-		logger.info('Connected to the database');
+		this.app.use(errorHandler);
+	}
 
-		app.listen(port, () => {
-			logger.info(`App listening on port ${port.toString()}`);
-		});
-	} catch (error: unknown) {
-		logger.error('Failed to connect to the database', { error });
-		process.exit(1);
+	public async start() {
+		try {
+			await connectMongoose();
+			await prisma.$connect();
+			this.logger.info('Connected to the database');
+
+			this.app.listen(this.port, () => {
+				this.logger.info(`App listening on port ${this.port.toString()}`);
+			});
+		} catch (error: unknown) {
+			this.logger.error('Failed to connect to the database', { error });
+			process.exit(1);
+		}
 	}
 }
 
-void startServer();
+const application = new Application();
+void application.start();

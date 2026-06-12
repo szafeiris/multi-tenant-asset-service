@@ -2,20 +2,30 @@ import type { AssetRepository } from '@/repositories/AssetRepository';
 import type { TenantRepository } from '@/repositories/TenantRepository';
 import type { UserRepository } from '@/repositories/UserRepository';
 
-import { AssetService } from './AssetService';
-import { TenantService } from './TenantService';
-import { UserService } from './UserService';
+import { AssetService, type IAssetService } from './AssetService';
+import { AuthService, type IAuthService } from './AuthService';
+import { type ITenantService, TenantService } from './TenantService';
+import { type IUserService, UserService } from './UserService';
 
-export interface Repositories {
+export interface ServiceDependencies {
 	assetRepository: AssetRepository;
 	tenantRepository: TenantRepository;
 	userRepository: UserRepository;
 }
 
-export function createServices(repositories: Repositories) {
+export interface Services {
+	assetService: IAssetService;
+	authService: IAuthService;
+	tenantService: ITenantService;
+	userService: IUserService;
+}
+
+export default function createServices(dependencies: ServiceDependencies): Services {
+	const { assetRepository, tenantRepository, userRepository } = dependencies;
 	return {
-		assetService: new AssetService(repositories.assetRepository),
-		tenantService: new TenantService(repositories.tenantRepository),
-		userService: new UserService(repositories.userRepository),
+		assetService: new AssetService(assetRepository),
+		authService: new AuthService(tenantRepository, userRepository),
+		tenantService: new TenantService(tenantRepository),
+		userService: new UserService(userRepository),
 	};
 }

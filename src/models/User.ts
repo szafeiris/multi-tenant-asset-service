@@ -17,6 +17,8 @@ export const CreateUserSchema = UserSchema.pick({
 	name: true,
 	role: true,
 	tenantId: true,
+}).extend({
+	password: z.string().min(1),
 });
 
 export const UpdateUserSchema = CreateUserSchema.partial();

@@ -6,6 +6,7 @@ export interface BaseConfiguration {
 }
 
 export interface Configuration {
+	jwt: JwtConfiguration;
 	mongo: DatabaseConfiguration;
 	postgres: PostgresConfiguration;
 	redis: RedisConfiguration;
@@ -16,6 +17,12 @@ export interface DatabaseConfiguration extends BaseConfiguration {
 	database: string;
 	password: string;
 	user: string;
+}
+
+export interface JwtConfiguration {
+	accessExpiration: string;
+	refreshExpiration: string;
+	secret: string;
 }
 
 export interface PostgresConfiguration extends DatabaseConfiguration {
@@ -32,6 +39,11 @@ export interface ServerConfiguration {
 
 function loadConfiguration(): Configuration {
 	return {
+		jwt: {
+			accessExpiration: getEnv('JWT_ACCESS_EXPIRATION'),
+			refreshExpiration: getEnv('JWT_REFRESH_EXPIRATION'),
+			secret: getEnv('JWT_SECRET'),
+		},
 		mongo: {
 			database: getEnv('MONGO_DB'),
 			host: getEnv('MONGO_HOST'),

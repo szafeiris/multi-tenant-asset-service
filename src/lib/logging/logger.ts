@@ -2,12 +2,23 @@ import winston from 'winston';
 import 'winston-daily-rotate-file';
 
 import { config } from '@/lib/configuration';
+import { requestContextStorage } from '@/lib/context/requestContext';
 
 const logFormat = winston.format.combine(
 	winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
 	winston.format.printf((info) => {
 		const contextStr = info.context ? ` [${info.context as string}]` : '';
-		return `${info.timestamp as string} [${info.level}]${contextStr}: ${info.message as string}`;
+		const store = requestContextStorage.getStore();
+		
+		let reqStr = '';
+		if (store) {
+			const reqParts = [`reqId:${store.requestId}`];
+			if (store.tenantId) reqParts.push(`tenant:${store.tenantId}`);
+			if (store.userId) reqParts.push(`user:${store.userId}`);
+			reqStr = ` [${reqParts.join(' ')}]`;
+		}
+
+		return `${info.timestamp as string} [${info.level}]${contextStr}${reqStr}: ${info.message as string}`;
 	}),
 );
 

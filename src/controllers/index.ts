@@ -1,21 +1,33 @@
-import type { AssetService } from '@/services/AssetService';
-import type { TenantService } from '@/services/TenantService';
-import type { UserService } from '@/services/UserService';
+import type { IAssetService } from '@/services/AssetService';
+import type { IAuthService } from '@/services/AuthService';
+import type { ITenantService } from '@/services/TenantService';
+import type { IUserService } from '@/services/UserService';
 
-import { AssetController } from './AssetController';
-import { TenantController } from './TenantController';
-import { UserController } from './UserController';
+import { AssetController, type IAssetController } from './AssetController';
+import { AuthController, type IAuthController } from './AuthController';
+import { type ITenantController, TenantController } from './TenantController';
+import { type IUserController, UserController } from './UserController';
 
-export interface Services {
-	assetService: AssetService;
-	tenantService: TenantService;
-	userService: UserService;
+export interface ControllerDependencies {
+	assetService: IAssetService;
+	authService: IAuthService;
+	tenantService: ITenantService;
+	userService: IUserService;
 }
 
-export function createControllers(services: Services) {
+export interface Controllers {
+	assetController: IAssetController;
+	authController: IAuthController;
+	tenantController: ITenantController;
+	userController: IUserController;
+}
+
+export default function createControllers(dependencies: ControllerDependencies): Controllers {
+	const { assetService, authService, tenantService, userService } = dependencies;
 	return {
-		assetController: new AssetController(services.assetService),
-		tenantController: new TenantController(services.tenantService),
-		userController: new UserController(services.userService),
+		assetController: new AssetController(assetService),
+		authController: new AuthController(authService),
+		tenantController: new TenantController(tenantService),
+		userController: new UserController(userService),
 	};
 }

@@ -1,26 +1,37 @@
 import { Router } from 'express';
 
-import { IAssetController } from '@/controllers/asset.controller';
-import { ITenantController } from '@/controllers/tenant.controller';
-import { IUserController } from '@/controllers/user.controller';
+import type { IAssetController } from '@/controllers/AssetController';
+import type { IAuthController } from '@/controllers/AuthController';
+import type { ITenantController } from '@/controllers/TenantController';
+import type { IUserController } from '@/controllers/UserController';
+
+import { requireAuth } from '@/middleware/auth';
 
 import createAssetRouter from './asset.routes';
+import createAuthRouter from './auth.routes';
 import createTenantRouter from './tenant.routes';
 import createUserRouter from './user.routes';
 
 export interface RouteDependencies {
 	assetController: IAssetController;
+	authController: IAuthController;
 	tenantController: ITenantController;
 	userController: IUserController;
 }
 
 export default function createRoutes(dependencies: RouteDependencies): Router {
-	const { assetController, tenantController, userController } = dependencies;
+	const { assetController, authController, tenantController, userController } = dependencies;
 	const router = Router();
 
-	router.use('/assets', createAssetRouter(assetController));
-	router.use('/tenants', createTenantRouter(tenantController));
-	router.use('/users', createUserRouter(userController));
+	router.use('/auth', createAuthRouter(authController));
+	
+	const protectedRouter = Router();
+	protectedRouter.use(requireAuth);
+	protectedRouter.use('/assets', createAssetRouter(assetController));
+	protectedRouter.use('/tenants', createTenantRouter(tenantController));
+	protectedRouter.use('/users', createUserRouter(userController));
+
+	router.use(protectedRouter);
 
 	return router;
 }

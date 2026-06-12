@@ -1,9 +1,19 @@
+import type { User } from '@prisma/client';
+
 import type { CreateUserDto, UpdateUserDto } from '@/models/User';
 
-import { getTenantContext } from '@/lib/context/tenantContext';
+import { getTenantContext } from '@/lib/context/requestContext';
 import { UserRepository } from '@/repositories/UserRepository';
 
-export class UserService {
+export interface IUserService {
+	createUser(data: CreateUserDto): Promise<User>;
+	deleteUser(id: string): Promise<User>;
+	getUserById(id: string): Promise<null | User>;
+	getUsers(): Promise<User[]>;
+	updateUser(id: string, data: UpdateUserDto): Promise<User>;
+}
+
+export class UserService implements IUserService {
 	private readonly userRepository: UserRepository;
 
 	constructor(userRepository: UserRepository) {

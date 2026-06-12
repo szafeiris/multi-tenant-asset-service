@@ -1,5 +1,6 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 import { Pool } from 'pg';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -132,9 +133,10 @@ async function main() {
 	];
 
 	for (const user of users) {
+		const passwordHash = await bcrypt.hash(user.email, 10);
 		await prisma.user.upsert({
-			create: user,
-			update: {},
+			create: { ...user, passwordHash },
+			update: { passwordHash },
 			where: { id: user.id },
 		});
 	}
