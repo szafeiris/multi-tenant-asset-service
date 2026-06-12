@@ -2,7 +2,15 @@ import type { CreateAssetDto, IAsset, UpdateAssetDto } from '@/models/Asset';
 
 import { AssetRepository } from '@/repositories/AssetRepository';
 
-export class AssetService {
+export interface IAssetService {
+	createAsset(data: CreateAssetDto): Promise<IAsset>;
+	deleteAsset(id: string): Promise<IAsset | null>;
+	getAssetById(id: string): Promise<IAsset | null>;
+	getAssets(): Promise<IAsset[]>;
+	updateAsset(id: string, data: UpdateAssetDto): Promise<IAsset | null>;
+}
+
+export class AssetService implements IAssetService {
 	private readonly assetRepository: AssetRepository;
 
 	constructor(assetRepository: AssetRepository) {

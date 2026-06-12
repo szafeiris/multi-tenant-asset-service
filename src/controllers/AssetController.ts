@@ -1,15 +1,24 @@
 import type { Request, Response } from 'express';
 
+import type { IAssetService } from '@/services/AssetService';
+
 import { getLogger } from '@/lib/logging/logger';
 import { CreateAssetSchema, UpdateAssetSchema } from '@/models/Asset';
-import { AssetService } from '@/services/AssetService';
 
 const logger = getLogger();
 
-export class AssetController {
-	private readonly assetService: AssetService;
+export interface IAssetController {
+	createAsset(req: Request, res: Response): Promise<void>;
+	deleteAsset(req: Request, res: Response): Promise<void>;
+	getAssetById(req: Request, res: Response): Promise<void>;
+	getAssets(req: Request, res: Response): Promise<void>;
+	updateAsset(req: Request, res: Response): Promise<void>;
+}
 
-	constructor(assetService: AssetService) {
+export class AssetController implements IAssetController {
+	private readonly assetService: IAssetService;
+
+	constructor(assetService: IAssetService) {
 		this.assetService = assetService;
 	}
 
@@ -20,7 +29,7 @@ export class AssetController {
 			res.status(201).json(asset);
 		} catch (error) {
 			logger.error('Failed to create asset', { error });
-			res.status(400).json({ error: 'Failed to create asset', details: error });
+			res.status(400).json({ details: error, error: 'Failed to create asset' });
 		}
 	}
 
@@ -83,7 +92,7 @@ export class AssetController {
 			res.status(200).json(asset);
 		} catch (error) {
 			logger.error('Failed to update asset', { error });
-			res.status(400).json({ error: 'Failed to update asset', details: error });
+			res.status(400).json({ details: error, error: 'Failed to update asset' });
 		}
 	}
 }

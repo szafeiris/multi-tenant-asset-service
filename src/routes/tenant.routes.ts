@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
-import { TenantController } from '@/controllers/TenantController';
+import type { ITenantController } from '@/controllers/TenantController';
 
-export default function createTenantRouter(tenantController: TenantController) {
+export default function createTenantRouter(tenantController: ITenantController) {
 	const tenantRouter = Router();
 
 	tenantRouter.post('/', tenantController.createTenant.bind(tenantController));

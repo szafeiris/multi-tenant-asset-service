@@ -1,7 +1,19 @@
+import type { Tenant } from '@prisma/client';
+
 import type { CreateTenantDto, UpdateTenantDto } from '@/models/Tenant';
+
 import { TenantRepository } from '@/repositories/TenantRepository';
 
-export class TenantService {
+export interface ITenantService {
+	createTenant(data: CreateTenantDto): Promise<Tenant>;
+	deleteTenant(id: string): Promise<Tenant>;
+	getTenantById(id: string): Promise<null | Tenant>;
+	getTenantBySlug(slug: string): Promise<null | Tenant>;
+	getTenants(): Promise<Tenant[]>;
+	updateTenant(id: string, data: UpdateTenantDto): Promise<Tenant>;
+}
+
+export class TenantService implements ITenantService {
 	private readonly tenantRepository: TenantRepository;
 
 	constructor(tenantRepository: TenantRepository) {

@@ -1,0 +1,16 @@
+meta {
+  name: Get Asset By Id
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/assets/asset_id_here
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+

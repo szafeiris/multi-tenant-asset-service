@@ -17,14 +17,14 @@ export class AuthController implements IAuthController {
 	public login = async (req: Request, res: Response): Promise<void> => {
 		const data = LoginSchema.parse(req.body);
 		const result = await this.authService.login(data);
-		
+
 		const store = requestContextStorage.getStore();
 		if (store) {
 			store.userId = result.user.id;
 			store.tenantId = result.user.tenantId;
 			store.role = result.user.role;
 		}
-		
+
 		res.status(200).json(result);
 	};
 
@@ -32,7 +32,7 @@ export class AuthController implements IAuthController {
 		const authHeader = req.headers.authorization;
 		const accessToken = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : '';
 		const { refreshToken } = req.body as { refreshToken?: string };
-		
+
 		await this.authService.logout(accessToken, refreshToken ?? '');
 		res.status(204).send();
 	};
@@ -40,16 +40,16 @@ export class AuthController implements IAuthController {
 	public refresh = async (req: Request, res: Response): Promise<void> => {
 		const authHeader = req.headers.authorization;
 		const refreshToken = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : '';
-		
+
 		if (!refreshToken) {
 			res.status(401).json({ error: 'Missing or invalid refresh token in Authorization header' });
 			return;
 		}
-		
+
 		const result = await this.authService.refresh(refreshToken);
 
 		const store = requestContextStorage.getStore();
-		const decoded = jwt.decode(result.accessToken) as null | { role?: string; tenantId?: string; userId?: string; };
+		const decoded = jwt.decode(result.accessToken) as null | { role?: string; tenantId?: string; userId?: string };
 		if (store && decoded) {
 			store.userId = decoded.userId;
 			store.tenantId = decoded.tenantId;

@@ -1,6 +1,6 @@
 import type { CreateAssetDto, UpdateAssetDto } from '@/models/Asset';
 
-import { getTenantContext } from '@/lib/context/tenantContext';
+import { getTenantContext } from '@/lib/context/requestContext';
 import { Asset, type IAsset } from '@/models/Asset';
 
 export class AssetRepository {

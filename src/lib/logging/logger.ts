@@ -9,7 +9,7 @@ const logFormat = winston.format.combine(
 	winston.format.printf((info) => {
 		const contextStr = info.context ? ` [${info.context as string}]` : '';
 		const store = requestContextStorage.getStore();
-		
+
 		let reqStr = '';
 		if (store) {
 			const reqParts = [`reqId:${store.requestId}`];
