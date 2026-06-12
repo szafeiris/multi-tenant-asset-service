@@ -29,7 +29,7 @@ export const requireAuth = async (req: AuthRequest, res: Response, next: NextFun
 
 	if (!authHeader?.startsWith('Bearer ')) {
 		logger.warn('Authentication failed: Missing or invalid authorization header');
-		next(new UnauthorizedError('Missing authentication token'));
+		next(new UnauthorizedError());
 		return;
 	}
 
@@ -45,7 +45,7 @@ export const requireAuth = async (req: AuthRequest, res: Response, next: NextFun
 		const parsedContext = TenantContextSchema.safeParse({ role: decoded.role, tenantId: decoded.tenantId });
 		if (!parsedContext.success) {
 			logger.error('Invalid tenant context in token', { errors: parsedContext.error.issues });
-			next(new UnauthorizedError('Invalid tenant context in token'));
+			next(new UnauthorizedError());
 			return;
 		}
 
@@ -53,7 +53,7 @@ export const requireAuth = async (req: AuthRequest, res: Response, next: NextFun
 		const exists = await redis.get(`auth:access:${token}`);
 		if (!exists) {
 			logger.warn(`Authentication failed: Token is revoked or not found in Redis (userId: ${decoded.userId})`);
-			next(new UnauthorizedError('Invalid or expired authentication token'));
+			next(new UnauthorizedError());
 			return;
 		}
 
@@ -68,6 +68,6 @@ export const requireAuth = async (req: AuthRequest, res: Response, next: NextFun
 		next();
 	} catch (error) {
 		logger.warn('Authentication failed: Invalid token signature or expired', { error });
-		next(new UnauthorizedError('Invalid or expired authentication token'));
+		next(new UnauthorizedError());
 	}
 };

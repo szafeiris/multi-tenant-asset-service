@@ -11,6 +11,13 @@ export const TenantSchema = z.object({
 export const CreateTenantSchema = TenantSchema.pick({
 	name: true,
 	slug: true,
+}).extend({
+	adminUser: z.object({
+		// eslint-disable-next-line @typescript-eslint/no-deprecated
+		email: z.string().email(),
+		name: z.string().min(1),
+		password: z.string().min(1),
+	}),
 });
 
 export const UpdateTenantSchema = CreateTenantSchema.partial();

@@ -38,11 +38,6 @@ export class UserRepository {
 	}
 
 	public async update(id: string, data: UpdateUserDto) {
-		const { password, ...userData } = data;
-		const updateData: Record<string, unknown> = { ...userData };
-		if (password) {
-			updateData.passwordHash = await bcrypt.hash(password, 10);
-		}
-		return prisma.user.update({ data: updateData, where: { id } });
+		return prisma.user.update({ data, where: { id } });
 	}
 }

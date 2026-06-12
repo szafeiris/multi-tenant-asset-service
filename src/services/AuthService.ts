@@ -27,19 +27,19 @@ export class AuthService implements IAuthService {
 		const tenant = await this.tenantRepository.findBySlug(data.tenantSlug);
 		if (!tenant) {
 			logger.warn(`Login failed: Tenant not found - ${data.tenantSlug}`);
-			throw new UnauthorizedError('Invalid credentials');
+			throw new UnauthorizedError();
 		}
 
 		const user = await this.userRepository.findByEmailAndTenant(tenant.id, data.email);
 		if (!user) {
 			logger.warn(`Login failed: User not found - ${data.email} in tenant ${tenant.id}`);
-			throw new UnauthorizedError('Invalid credentials');
+			throw new UnauthorizedError();
 		}
 
 		const isPasswordValid = await bcrypt.compare(data.password, user.passwordHash);
 		if (!isPasswordValid) {
 			logger.warn(`Login failed: Invalid password for user ${user.id}`);
-			throw new UnauthorizedError('Invalid credentials');
+			throw new UnauthorizedError();
 		}
 
 		const payload = {
@@ -106,7 +106,7 @@ export class AuthService implements IAuthService {
 			// Check if token exists in Redis (hasn't been logged out or replaced)
 			const exists = await redis.get(`auth:refresh:${refreshToken}`);
 			if (!exists) {
-				throw new UnauthorizedError('Invalid or expired refresh token');
+				throw new UnauthorizedError();
 			}
 
 			// Invalidate the old refresh token (refresh token rotation)
@@ -145,7 +145,7 @@ export class AuthService implements IAuthService {
 			};
 		} catch (error) {
 			logger.warn('Refresh token validation failed', { error });
-			throw new UnauthorizedError('Invalid or expired refresh token');
+			throw new UnauthorizedError();
 		}
 	}
 }

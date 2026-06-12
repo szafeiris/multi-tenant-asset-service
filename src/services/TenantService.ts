@@ -2,6 +2,7 @@ import type { Tenant } from '@prisma/client';
 
 import type { CreateTenantDto, UpdateTenantDto } from '@/models/Tenant';
 
+import { getTenantContext } from '@/lib/context/requestContext';
 import { TenantRepository } from '@/repositories/TenantRepository';
 
 export interface ITenantService {
@@ -25,22 +26,33 @@ export class TenantService implements ITenantService {
 	}
 
 	public async deleteTenant(id: string) {
+		const { tenantId } = getTenantContext();
+		if (id !== tenantId) throw new Error('Tenant not found or access denied');
 		return this.tenantRepository.delete(id);
 	}
 
 	public async getTenantById(id: string) {
+		const { tenantId } = getTenantContext();
+		if (id !== tenantId) return null;
 		return this.tenantRepository.findById(id);
 	}
 
 	public async getTenantBySlug(slug: string) {
-		return this.tenantRepository.findBySlug(slug);
+		const { tenantId } = getTenantContext();
+		const tenant = await this.tenantRepository.findBySlug(slug);
+		if (tenant && tenant.id !== tenantId) return null;
+		return tenant;
 	}
 
 	public async getTenants() {
-		return this.tenantRepository.findAll();
+		const { tenantId } = getTenantContext();
+		const tenant = await this.tenantRepository.findById(tenantId);
+		return tenant ? [tenant] : [];
 	}
 
 	public async updateTenant(id: string, data: UpdateTenantDto) {
+		const { tenantId } = getTenantContext();
+		if (id !== tenantId) throw new Error('Tenant not found or access denied');
 		return this.tenantRepository.update(id, data);
 	}
 }

@@ -24,6 +24,7 @@ export default function createRoutes(dependencies: RouteDependencies): Router {
 	const router = Router();
 
 	router.use('/auth', createAuthRouter(authController));
+	router.post('/tenants', tenantController.createTenant.bind(tenantController));
 
 	const protectedRouter = Router();
 	protectedRouter.use(requireAuth);

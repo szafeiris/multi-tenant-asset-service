@@ -21,24 +21,39 @@ export class UserService implements IUserService {
 	}
 
 	public async createUser(data: CreateUserDto) {
-		return this.userRepository.create(data);
+		const { tenantId } = getTenantContext();
+		return this.userRepository.create({ ...data, tenantId });
 	}
 
 	public async deleteUser(id: string) {
+		const { tenantId } = getTenantContext();
+		const user = await this.userRepository.findById(id);
+		if (user?.tenantId !== tenantId) {
+			throw new Error('User not found');
+		}
 		return this.userRepository.delete(id);
 	}
 
 	public async getUserById(id: string) {
-		return this.userRepository.findById(id);
+		const { tenantId } = getTenantContext();
+		const user = await this.userRepository.findById(id);
+		if (user && user.tenantId !== tenantId) {
+			return null;
+		}
+		return user;
 	}
 
 	public async getUsers() {
 		const { tenantId } = getTenantContext();
-		// In a real app, Admins might be able to fetch cross-tenant, but by default we isolate
 		return this.userRepository.findAll(tenantId);
 	}
 
 	public async updateUser(id: string, data: UpdateUserDto) {
+		const { tenantId } = getTenantContext();
+		const user = await this.userRepository.findById(id);
+		if (user?.tenantId !== tenantId) {
+			throw new Error('User not found');
+		}
 		return this.userRepository.update(id, data);
 	}
 }

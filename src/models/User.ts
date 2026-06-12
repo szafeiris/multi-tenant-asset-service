@@ -21,7 +21,7 @@ export const CreateUserSchema = UserSchema.pick({
 	password: z.string().min(1),
 });
 
-export const UpdateUserSchema = CreateUserSchema.partial();
+export const UpdateUserSchema = UserSchema.pick({ role: true });
 
 export type CreateUserDto = z.infer<typeof CreateUserSchema>;
 export type UpdateUserDto = z.infer<typeof UpdateUserSchema>;
