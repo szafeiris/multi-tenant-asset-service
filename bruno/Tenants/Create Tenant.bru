@@ -7,16 +7,17 @@ meta {
 post {
   url: {{baseUrl}}/api/tenants
   body: json
-  auth: bearer
-}
-
-auth:bearer {
-  token: {{accessToken}}
+  auth: none
 }
 
 body:json {
   {
     "name": "New Tenant",
-    "slug": "new-tenant"
+    "slug": "new-tenant",
+    "adminUser": {
+      "name": "Admin User",
+      "email": "admin@example.com",
+      "password": "password"
+    }
   }
 }
