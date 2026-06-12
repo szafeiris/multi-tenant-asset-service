@@ -43,9 +43,12 @@ export class Application {
 	public async start() {
 		try {
 			await connectMongoose();
+
 			await prisma.$connect();
+			this.logger.info('Connected to PostgreSQL');
+
 			await redis.ping();
-			this.logger.info('Connected Redis');
+			this.logger.info('Connected to Redis');
 
 			this.app.listen(this.port, () => {
 				this.logger.info(`App listening on port ${this.port.toString()}`);
