@@ -6,6 +6,7 @@ import { config } from '@/lib/configuration';
 import { connectMongoose } from '@/lib/database/mongoose';
 import { prisma } from '@/lib/database/prisma';
 import { getLogger } from '@/lib/logging/logger';
+import { redis } from '@/lib/redis';
 import { errorHandler } from '@/middleware/errorHandler';
 import { requestContextMiddleware } from '@/middleware/requestContextMiddleware';
 import { createRepositories, Repositories } from '@/repositories';
@@ -43,7 +44,8 @@ export class Application {
 		try {
 			await connectMongoose();
 			await prisma.$connect();
-			this.logger.info('Connected to the database');
+			await redis.ping();
+			this.logger.info('Connected Redis');
 
 			this.app.listen(this.port, () => {
 				this.logger.info(`App listening on port ${this.port.toString()}`);
