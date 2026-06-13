@@ -23,7 +23,7 @@ describe('ReportService', () => {
 			const mockAssets = [
 				{ id: '1', lat: 0.1, lng: 0.1, name: 'Near Asset' }, // within ~15km
 				{ id: '2', lat: 1.0, lng: 1.0, name: 'Far Asset' }, // > 100km
-			];
+			] as unknown as import('@/models/Asset').IAsset[];
 			assetRepository.getAssetsInBoundingBox.mockResolvedValue(mockAssets);
 
 			const result = await service.getAssetsNear(0, 0, 20, 'km');

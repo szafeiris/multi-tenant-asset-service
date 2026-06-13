@@ -3,6 +3,8 @@ import path from 'path';
 
 export default defineConfig({
 	test: {
+		globalSetup: ['./test/setup-e2e.ts'],
+		setupFiles: ['./test/setup-env.ts'],
 		exclude: [...configDefaults.exclude, '**/._*'],
 		env: {
 			JWT_ACCESS_EXPIRATION: '1h',

@@ -42,15 +42,23 @@ export class Application {
 		this.app.use(errorHandler);
 	}
 
+	public getApp(): Express {
+		return this.app;
+	}
+
+	public async initializeDatabases() {
+		await connectMongoose();
+
+		await prisma.$connect();
+		this.logger.info('Connected to PostgreSQL');
+
+		await redis.ping();
+		this.logger.info('Connected to Redis');
+	}
+
 	public async start() {
 		try {
-			await connectMongoose();
-
-			await prisma.$connect();
-			this.logger.info('Connected to PostgreSQL');
-
-			await redis.ping();
-			this.logger.info('Connected to Redis');
+			await this.initializeDatabases();
 
 			this.app.listen(this.port, () => {
 				this.logger.info(`App listening on port ${this.port.toString()}`);
@@ -62,5 +70,7 @@ export class Application {
 	}
 }
 
-const application = new Application();
-void application.start();
+if (process.env.NODE_ENV !== 'test') {
+	const application = new Application();
+	void application.start();
+}

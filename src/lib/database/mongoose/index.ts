@@ -7,13 +7,17 @@ const logger = getLogger();
 
 export async function connectMongoose() {
 	try {
-		const { database, host, password, port, user } = config.mongo;
-		const uri = `mongodb://${user}:${password}@${host}:${port.toString()}/${database}?authSource=admin`;
+		let uri = process.env.MONGO_URI;
+		if (!uri) {
+			const { database, host, password, port, user } = config.mongo;
+			uri = `mongodb://${user}:${password}@${host}:${port.toString()}/${database}?authSource=admin`;
+		}
 
-		await mongoose.connect(uri);
+		await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
 		logger.info('Connected to MongoDB');
-	} catch (error) {
-		logger.error('Failed to connect to MongoDB', { error });
+	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : 'Unknown error';
+		logger.error(`Failed to connect to MongoDB: ${message}`, { error });
 		throw error;
 	}
 }
