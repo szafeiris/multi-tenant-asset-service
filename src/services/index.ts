@@ -27,7 +27,7 @@ export default function createServices(dependencies: ServiceDependencies): Servi
 	return {
 		assetService: new AssetService(assetRepository),
 		authService: new AuthService(tenantRepository, userRepository),
-		reportService: new ReportService(assetRepository),
+		reportService: new ReportService(assetRepository, tenantRepository),
 		tenantService: new TenantService(tenantRepository),
 		userService: new UserService(userRepository),
 	};

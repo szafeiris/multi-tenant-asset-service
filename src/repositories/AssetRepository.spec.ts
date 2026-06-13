@@ -20,6 +20,7 @@ vi.mock('@/models/Asset', () => {
 	(MockAsset as any).findOne = vi.fn();
 	(MockAsset as any).aggregate = vi.fn();
 	(MockAsset as any).findOneAndUpdate = vi.fn();
+	(MockAsset as any).countDocuments = vi.fn();
 	return { Asset: MockAsset };
 });
 
@@ -73,13 +74,21 @@ describe('AssetRepository', () => {
 	});
 
 	describe('findAll', () => {
-		it('should find all assets for the current tenant', async () => {
-			const mockExec = vi.fn().mockResolvedValue([]);
-			vi.mocked(Asset.find).mockReturnValue({ exec: mockExec } as any);
+		it('should find all assets for the current tenant with default pagination', async () => {
+			const mockExecFind = vi.fn().mockResolvedValue([]);
+			const mockLimit = vi.fn().mockReturnValue({ exec: mockExecFind });
+			const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
+			vi.mocked(Asset.find).mockReturnValue({ skip: mockSkip } as any);
 
-			await repository.findAll();
+			const mockExecCount = vi.fn().mockResolvedValue(0);
+			vi.mocked(Asset.countDocuments).mockReturnValue({ exec: mockExecCount } as any);
+
+			const result = await repository.findAll();
 			expect(Asset.find).toHaveBeenCalledWith({ tenant_id: 'tenant-1' });
-			expect(mockExec).toHaveBeenCalled();
+			expect(mockSkip).toHaveBeenCalledWith(0);
+			expect(mockLimit).toHaveBeenCalledWith(10);
+			expect(Asset.countDocuments).toHaveBeenCalledWith({ tenant_id: 'tenant-1' });
+			expect(result).toEqual({ data: [], total: 0 });
 		});
 	});
 

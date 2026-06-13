@@ -35,6 +35,7 @@ describe('UserController', () => {
 		req = {
 			body: {},
 			params: {},
+			query: {},
 		};
 		res = {
 			status,
@@ -123,12 +124,13 @@ describe('UserController', () => {
 
 	describe('getUsers', () => {
 		it('should return list of users with 200', async () => {
-			userService.getUsers.mockResolvedValue([{ id: 'user-1' }] as any);
+			const mockResult = { data: [{ id: 'user-1' } as any], limit: 10, page: 1, total: 1 };
+			userService.getUsers.mockResolvedValue(mockResult);
 
 			await controller.getUsers(req as Request, res as Response);
 
 			expect(status).toHaveBeenCalledWith(200);
-			expect(json).toHaveBeenCalledWith([{ id: 'user-1' }]);
+			expect(json).toHaveBeenCalledWith(mockResult);
 		});
 	});
 

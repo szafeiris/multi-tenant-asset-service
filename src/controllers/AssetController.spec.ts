@@ -35,6 +35,7 @@ describe('AssetController', () => {
 		req = {
 			body: {},
 			params: {},
+			query: {},
 		};
 		res = {
 			status,
@@ -122,12 +123,13 @@ describe('AssetController', () => {
 
 	describe('getAssets', () => {
 		it('should return list of assets with 200', async () => {
-			assetService.getAssets.mockResolvedValue([{ id: 'asset-1' }] as any);
+			const mockResult = { data: [{ id: 'asset-1' } as any], limit: 10, page: 1, total: 1 };
+			assetService.getAssets.mockResolvedValue(mockResult);
 
 			await controller.getAssets(req as Request, res as Response);
 
 			expect(status).toHaveBeenCalledWith(200);
-			expect(json).toHaveBeenCalledWith([{ id: 'asset-1' }]);
+			expect(json).toHaveBeenCalledWith(mockResult);
 		});
 	});
 

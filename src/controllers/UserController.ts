@@ -70,8 +70,16 @@ export class UserController implements IUserController {
 
 	public async getUsers(req: Request, res: Response): Promise<void> {
 		try {
-			const users = await this.userService.getUsers();
-			res.status(200).json(users);
+			const page = parseInt(req.query.page as string, 10) || 1;
+			const limit = parseInt(req.query.limit as string, 10) || 10;
+
+			const result = await this.userService.getUsers(page, limit);
+			res.status(200).json({
+				data: result.data,
+				limit,
+				page,
+				total: result.total,
+			});
 		} catch (error) {
 			logger.error('Failed to fetch users', { error });
 			res.status(500).json({ error: 'Failed to fetch users' });

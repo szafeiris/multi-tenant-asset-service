@@ -5,9 +5,16 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/api/assets
+  url: {{baseUrl}}/api/assets?page=1&limit=10
   body: none
   auth: bearer
+}
+
+query {
+  page: 1
+  limit: 10
+  ~status: ACTIVE
+  ~type: SENSOR
 }
 
 auth:bearer {

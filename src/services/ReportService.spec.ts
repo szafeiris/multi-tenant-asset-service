@@ -3,10 +3,12 @@ import { beforeEach, describe, expect, it, Mocked, vi } from 'vitest';
 
 import { getTenantContext } from '@/lib/context/requestContext';
 import { AssetRepository } from '@/repositories/AssetRepository';
+import { TenantRepository } from '@/repositories/TenantRepository';
 
 import { ReportService } from './ReportService';
 
 vi.mock('@/repositories/AssetRepository');
+vi.mock('@/repositories/TenantRepository');
 
 vi.mock('@/lib/context/requestContext', () => ({
 	getTenantContext: vi.fn(),
@@ -22,6 +24,7 @@ vi.mock('@/lib/redis', () => ({
 describe('ReportService', () => {
 	let service: ReportService;
 	let assetRepository: Mocked<AssetRepository>;
+	let tenantRepository: Mocked<TenantRepository>;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -29,7 +32,8 @@ describe('ReportService', () => {
 		vi.mocked(getTenantContext).mockReturnValue({ role: undefined, tenantId: 'tenant-1' });
 
 		assetRepository = new AssetRepository() as Mocked<AssetRepository>;
-		service = new ReportService(assetRepository);
+		tenantRepository = new TenantRepository() as Mocked<TenantRepository>;
+		service = new ReportService(assetRepository, tenantRepository);
 	});
 
 	describe('getAssetsNear', () => {
@@ -55,19 +59,24 @@ describe('ReportService', () => {
 	});
 
 	describe('getReportByStatus', () => {
-		it('should return counts mapped by status', async () => {
+		it('should return counts mapped by status along with tenant metadata', async () => {
 			const mockData = [
 				{ _id: 'ACTIVE', count: 5 },
 				{ _id: 'MAINTENANCE', count: 2 },
 			];
 			assetRepository.getReportByStatus.mockResolvedValue(mockData);
+			const mockTenant = { createdAt: new Date(), id: 'tenant-1', name: 'Test Tenant', slug: 'test-tenant' };
+			tenantRepository.findById.mockResolvedValue(mockTenant);
 
 			const result = await service.getReportByStatus();
 
-			expect(result).toEqual([
-				{ count: 5, status: 'ACTIVE' },
-				{ count: 2, status: 'MAINTENANCE' },
-			]);
+			expect(result).toEqual({
+				report: [
+					{ count: 5, status: 'ACTIVE' },
+					{ count: 2, status: 'MAINTENANCE' },
+				],
+				tenant: mockTenant,
+			});
 		});
 	});
 

@@ -39,7 +39,7 @@ describe('Multi-Tenant Data Isolation (E2E)', () => {
 		// 4. Verify Amelia sees only Northwind assets
 		const listResA = await request(app).get('/api/assets').set('Authorization', `Bearer ${tokenA}`).expect(200);
 
-		const assetsA = listResA.body as Record<string, unknown>[];
+		const assetsA = (listResA.body as Record<string, unknown>).data as Record<string, unknown>[];
 		expect(assetsA.length).toBeGreaterThan(0);
 		// Every asset must belong to Tenant A
 		for (const asset of assetsA) {
@@ -49,7 +49,7 @@ describe('Multi-Tenant Data Isolation (E2E)', () => {
 		// 5. Verify Cora sees only Beacon assets
 		const listResB = await request(app).get('/api/assets').set('Authorization', `Bearer ${tokenB}`).expect(200);
 
-		const assetsB = listResB.body as Record<string, unknown>[];
+		const assetsB = (listResB.body as Record<string, unknown>).data as Record<string, unknown>[];
 		expect(assetsB.length).toBeGreaterThan(0);
 		// Every asset must belong to Tenant B
 		for (const asset of assetsB) {

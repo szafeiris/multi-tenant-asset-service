@@ -1,19 +1,23 @@
+import type { TenantRepository } from '@/repositories/TenantRepository';
+
 import { getTenantContext } from '@/lib/context/requestContext';
 import { Cacheable } from '@/lib/redis/cache';
 import { AssetRepository } from '@/repositories/AssetRepository';
 
 export interface IReportService {
 	getAssetsNear(lat: number, lng: number, radius: number, unit: string): Promise<unknown>;
-	getReportByStatus(): Promise<{ count: number; status: string }[]>;
+	getReportByStatus(): Promise<{ report: { count: number; status: string }[]; tenant: unknown }>;
 	getReportByType(): Promise<{ count: number; type: string }[]>;
 	getReportByYear(year: number): Promise<unknown>;
 }
 
 export class ReportService implements IReportService {
 	private readonly assetRepository: AssetRepository;
+	private readonly tenantRepository: TenantRepository;
 
-	constructor(assetRepository: AssetRepository) {
+	constructor(assetRepository: AssetRepository, tenantRepository: TenantRepository) {
 		this.assetRepository = assetRepository;
+		this.tenantRepository = tenantRepository;
 	}
 
 	@Cacheable({
@@ -69,8 +73,13 @@ export class ReportService implements IReportService {
 		ttlSeconds: 3600,
 	})
 	public async getReportByStatus() {
+		const tenantId = getTenantContext().tenantId;
+		const tenant = await this.tenantRepository.findById(tenantId);
 		const result = await this.assetRepository.getReportByStatus();
-		return result.map((item) => ({ count: item.count, status: item._id }));
+		return {
+			report: result.map((item) => ({ count: item.count, status: item._id })),
+			tenant,
+		};
 	}
 
 	@Cacheable({

@@ -75,12 +75,12 @@ describe('ReportController', () => {
 
 	describe('getReportByStatus', () => {
 		it('should return status report with 200', async () => {
-			reportService.getReportByStatus.mockResolvedValue([{ count: 5, status: 'ACTIVE' }]);
+			reportService.getReportByStatus.mockResolvedValue({ report: [{ count: 5, status: 'ACTIVE' }], tenant: null });
 
 			await controller.getReportByStatus(req as Request, res as Response);
 
 			expect(status).toHaveBeenCalledWith(200);
-			expect(json).toHaveBeenCalledWith([{ count: 5, status: 'ACTIVE' }]);
+			expect(json).toHaveBeenCalledWith({ report: [{ count: 5, status: 'ACTIVE' }], tenant: null });
 		});
 
 		it('should return 500 if service throws', async () => {

@@ -16,10 +16,13 @@ export class UserRepository {
 		return prisma.user.delete({ where: { id } });
 	}
 
-	public async findAll(tenantId?: string) {
-		return prisma.user.findMany({
-			where: tenantId ? { tenantId } : undefined,
-		});
+	public async findAll(tenantId?: string, page = 1, limit = 10) {
+		const skip = (page - 1) * limit;
+		const where = tenantId ? { tenantId } : undefined;
+
+		const [data, total] = await Promise.all([prisma.user.findMany({ skip, take: limit, where }), prisma.user.count({ where })]);
+
+		return { data, total };
 	}
 
 	public async findByEmailAndTenant(tenantId: string, email: string) {

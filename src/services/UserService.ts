@@ -10,7 +10,7 @@ export interface IUserService {
 	createUser(data: CreateUserDto): Promise<User>;
 	deleteUser(id: string): Promise<User>;
 	getUserById(id: string): Promise<null | User>;
-	getUsers(): Promise<User[]>;
+	getUsers(page?: number, limit?: number): Promise<{ data: User[]; total: number }>;
 	updateUser(id: string, data: UpdateUserDto): Promise<User>;
 }
 
@@ -50,9 +50,9 @@ export class UserService implements IUserService {
 		return user;
 	}
 
-	public async getUsers() {
+	public async getUsers(page?: number, limit?: number) {
 		const { tenantId } = getTenantContext();
-		return this.userRepository.findAll(tenantId);
+		return this.userRepository.findAll(tenantId, page, limit);
 	}
 
 	public async updateUser(id: string, data: UpdateUserDto) {

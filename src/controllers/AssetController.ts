@@ -75,8 +75,18 @@ export class AssetController implements IAssetController {
 
 	public async getAssets(req: Request, res: Response): Promise<void> {
 		try {
-			const assets = await this.assetService.getAssets();
-			res.status(200).json(assets);
+			const status = req.query.status as string | undefined;
+			const type = req.query.type as string | undefined;
+			const page = parseInt(req.query.page as string, 10) || 1;
+			const limit = parseInt(req.query.limit as string, 10) || 10;
+
+			const result = await this.assetService.getAssets({ status, type }, page, limit);
+			res.status(200).json({
+				data: result.data,
+				limit,
+				page,
+				total: result.total,
+			});
 		} catch (error) {
 			logger.error('Failed to fetch assets', { error });
 			res.status(500).json({ error: 'Failed to fetch assets' });

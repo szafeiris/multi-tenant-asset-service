@@ -15,9 +15,16 @@ export class AssetRepository {
 		return Asset.findOneAndDelete({ id, tenant_id: tenantId }).exec();
 	}
 
-	public async findAll(): Promise<IAsset[]> {
+	public async findAll(filters: { status?: string; type?: string } = {}, page = 1, limit = 10): Promise<{ data: IAsset[]; total: number }> {
 		const { tenantId } = getTenantContext();
-		return Asset.find({ tenant_id: tenantId }).exec();
+		const query: Record<string, unknown> = { tenant_id: tenantId };
+		if (filters.status) query.status = filters.status;
+		if (filters.type) query.type = filters.type;
+
+		const skip = (page - 1) * limit;
+		const [data, total] = await Promise.all([Asset.find(query).skip(skip).limit(limit).exec(), Asset.countDocuments(query).exec()]);
+
+		return { data, total };
 	}
 
 	public async findById(id: string): Promise<IAsset | null> {

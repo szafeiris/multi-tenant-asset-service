@@ -6,7 +6,7 @@ export interface IAssetService {
 	createAsset(data: CreateAssetDto): Promise<IAsset>;
 	deleteAsset(id: string): Promise<IAsset | null>;
 	getAssetById(id: string): Promise<IAsset | null>;
-	getAssets(): Promise<IAsset[]>;
+	getAssets(filters?: { status?: string; type?: string }, page?: number, limit?: number): Promise<{ data: IAsset[]; total: number }>;
 	updateAsset(id: string, data: UpdateAssetDto): Promise<IAsset | null>;
 }
 
@@ -30,9 +30,8 @@ export class AssetService implements IAssetService {
 		return this.assetRepository.findById(id);
 	}
 
-	public async getAssets(): Promise<IAsset[]> {
-		// No tenantId argument needed.
-		return this.assetRepository.findAll();
+	public async getAssets(filters?: { status?: string; type?: string }, page?: number, limit?: number): Promise<{ data: IAsset[]; total: number }> {
+		return this.assetRepository.findAll(filters, page, limit);
 	}
 
 	public async updateAsset(id: string, data: UpdateAssetDto): Promise<IAsset | null> {

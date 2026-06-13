@@ -10,6 +10,7 @@ import { UserRepository } from './UserRepository';
 vi.mock('@/lib/database/prisma', () => ({
 	prisma: {
 		user: {
+			count: vi.fn(),
 			create: vi.fn(),
 			delete: vi.fn(),
 			findMany: vi.fn(),
@@ -91,14 +92,20 @@ describe('UserRepository', () => {
 	describe('findAll', () => {
 		it('should find all users for a tenant', async () => {
 			vi.mocked(prisma.user.findMany).mockResolvedValue([]);
-			await repository.findAll('tenant-1');
-			expect(prisma.user.findMany).toHaveBeenCalledWith({ where: { tenantId: 'tenant-1' } });
+			vi.mocked(prisma.user.count).mockResolvedValue(0);
+			const result = await repository.findAll('tenant-1', 1, 10);
+			expect(prisma.user.findMany).toHaveBeenCalledWith({ skip: 0, take: 10, where: { tenantId: 'tenant-1' } });
+			expect(prisma.user.count).toHaveBeenCalledWith({ where: { tenantId: 'tenant-1' } });
+			expect(result).toEqual({ data: [], total: 0 });
 		});
 
 		it('should find all users across tenants if no tenantId provided', async () => {
 			vi.mocked(prisma.user.findMany).mockResolvedValue([]);
-			await repository.findAll();
-			expect(prisma.user.findMany).toHaveBeenCalledWith({ where: undefined });
+			vi.mocked(prisma.user.count).mockResolvedValue(0);
+			const result = await repository.findAll(undefined, 2, 5);
+			expect(prisma.user.findMany).toHaveBeenCalledWith({ skip: 5, take: 5, where: undefined });
+			expect(prisma.user.count).toHaveBeenCalledWith({ where: undefined });
+			expect(result).toEqual({ data: [], total: 0 });
 		});
 	});
 

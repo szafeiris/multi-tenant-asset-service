@@ -111,7 +111,7 @@ describe('UserService', () => {
 			userRepository.findAll.mockResolvedValue(users as any);
 
 			const result = await service.getUsers();
-			expect(userRepository.findAll).toHaveBeenCalledWith('tenant-1');
+			expect(userRepository.findAll).toHaveBeenCalledWith('tenant-1', undefined, undefined);
 			expect(result).toEqual(users);
 		});
 	});
