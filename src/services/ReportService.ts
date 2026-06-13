@@ -1,3 +1,5 @@
+import { getTenantContext } from '@/lib/context/requestContext';
+import { Cacheable } from '@/lib/redis/cache';
 import { AssetRepository } from '@/repositories/AssetRepository';
 
 export interface IReportService {
@@ -14,6 +16,11 @@ export class ReportService implements IReportService {
 		this.assetRepository = assetRepository;
 	}
 
+	@Cacheable({
+		key: ([lat, lng, radius, unit]: [number, number, number, string]) =>
+			`reports:${getTenantContext().tenantId}:assetsNear:${String(lat)}:${String(lng)}:${String(radius)}:${unit}`,
+		ttlSeconds: 3600,
+	})
 	public async getAssetsNear(lat: number, lng: number, radius: number, unit: string) {
 		let maxDistanceKm = radius;
 		if (unit === 'm') {
@@ -57,16 +64,28 @@ export class ReportService implements IReportService {
 		return assetsWithDistance.filter((item) => item.distance <= radius).sort((a, b) => a.distance - b.distance);
 	}
 
+	@Cacheable({
+		key: () => `reports:${getTenantContext().tenantId}:byStatus`,
+		ttlSeconds: 3600,
+	})
 	public async getReportByStatus() {
 		const result = await this.assetRepository.getReportByStatus();
 		return result.map((item) => ({ count: item.count, status: item._id }));
 	}
 
+	@Cacheable({
+		key: () => `reports:${getTenantContext().tenantId}:byType`,
+		ttlSeconds: 3600,
+	})
 	public async getReportByType() {
 		const result = await this.assetRepository.getReportByType();
 		return result.map((item) => ({ count: item.count, type: item._id }));
 	}
 
+	@Cacheable({
+		key: ([year]: [number]) => `reports:${getTenantContext().tenantId}:byYear:${String(year)}`,
+		ttlSeconds: 3600,
+	})
 	public async getReportByYear(year: number) {
 		const currentYearData = await this.assetRepository.getReportByYear(year);
 		const previousYearData = await this.assetRepository.getReportByYear(year - 1);

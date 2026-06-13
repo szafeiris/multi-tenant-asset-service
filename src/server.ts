@@ -54,6 +54,9 @@ export class Application {
 
 		await redis.ping();
 		this.logger.info('Connected to Redis');
+
+		await this.services.tenantService.warmupCache();
+		this.logger.info('Warmed up Tenant Cache');
 	}
 
 	public async start() {

@@ -24,6 +24,7 @@ describe('TenantController', () => {
 			getTenantById: vi.fn(),
 			getTenantBySlug: vi.fn(),
 			updateTenant: vi.fn(),
+			warmupCache: vi.fn(),
 		};
 
 		controller = new TenantController(tenantService);

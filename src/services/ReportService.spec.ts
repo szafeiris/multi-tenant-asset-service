@@ -1,11 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 import { beforeEach, describe, expect, it, Mocked, vi } from 'vitest';
 
+import { getTenantContext } from '@/lib/context/requestContext';
 import { AssetRepository } from '@/repositories/AssetRepository';
 
 import { ReportService } from './ReportService';
 
 vi.mock('@/repositories/AssetRepository');
+
+vi.mock('@/lib/context/requestContext', () => ({
+	getTenantContext: vi.fn(),
+}));
+
+vi.mock('@/lib/redis', () => ({
+	redis: {
+		get: vi.fn(),
+		set: vi.fn(),
+	},
+}));
 
 describe('ReportService', () => {
 	let service: ReportService;
@@ -13,6 +25,8 @@ describe('ReportService', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+
+		vi.mocked(getTenantContext).mockReturnValue({ role: undefined, tenantId: 'tenant-1' });
 
 		assetRepository = new AssetRepository() as Mocked<AssetRepository>;
 		service = new ReportService(assetRepository);

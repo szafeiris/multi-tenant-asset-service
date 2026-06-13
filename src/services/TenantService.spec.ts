@@ -16,6 +16,18 @@ vi.mock('@/lib/logging/logger', () => ({
 	getAuditLogger: vi.fn(),
 }));
 
+vi.mock('@/lib/redis', () => ({
+	redis: {
+		del: vi.fn(),
+		get: vi.fn(),
+		pipeline: vi.fn().mockReturnValue({
+			exec: vi.fn(),
+			set: vi.fn(),
+		}),
+		set: vi.fn(),
+	},
+}));
+
 vi.mock('@/repositories/TenantRepository');
 
 describe('TenantService', () => {
@@ -29,7 +41,7 @@ describe('TenantService', () => {
 		tenantRepository = new TenantRepository() as Mocked<TenantRepository>;
 		service = new TenantService(tenantRepository);
 
-		vi.mocked(getTenantContext).mockReturnValue({ tenantId: 'tenant-1' } as any);
+		vi.mocked(getTenantContext).mockReturnValue({ role: undefined, tenantId: 'tenant-1' });
 		vi.mocked(getRequestContext).mockReturnValue({ requestId: 'req-1', userId: 'admin-1' });
 
 		mockAuditLogger = { info: vi.fn() };

@@ -4,6 +4,8 @@ import type { CreateTenantDto, UpdateTenantDto } from '@/models/Tenant';
 
 import { getRequestContext, getTenantContext } from '@/lib/context/requestContext';
 import { getAuditLogger } from '@/lib/logging/logger';
+import { redis } from '@/lib/redis';
+import { Cacheable, CacheEvict } from '@/lib/redis/cache';
 import { TenantRepository } from '@/repositories/TenantRepository';
 
 export interface ITenantService {
@@ -13,6 +15,7 @@ export interface ITenantService {
 	getTenantBySlug(slug: string): Promise<null | Tenant>;
 
 	updateTenant(id: string, data: UpdateTenantDto): Promise<Tenant>;
+	warmupCache(): Promise<void>;
 }
 
 export class TenantService implements ITenantService {
@@ -22,6 +25,7 @@ export class TenantService implements ITenantService {
 		this.tenantRepository = tenantRepository;
 	}
 
+	@CacheEvict({ key: (_args: unknown[], result?: { slug?: string }) => `tenant:slug:${result?.slug ?? ''}` })
 	public async createTenant(data: CreateTenantDto) {
 		const tenant = await this.tenantRepository.create(data);
 		const context = getRequestContext();
@@ -29,6 +33,7 @@ export class TenantService implements ITenantService {
 		return tenant;
 	}
 
+	@CacheEvict({ key: (_args: unknown[], result?: { slug?: string }) => `tenant:slug:${result?.slug ?? ''}` })
 	public async deleteTenant(id: string) {
 		const { tenantId } = getTenantContext();
 		if (id !== tenantId) throw new Error('Tenant not found or access denied');
@@ -44,6 +49,7 @@ export class TenantService implements ITenantService {
 		return this.tenantRepository.findById(id);
 	}
 
+	@Cacheable({ key: ([slug]: [string]) => `tenant:slug:${slug}` })
 	public async getTenantBySlug(slug: string) {
 		const { tenantId } = getTenantContext();
 		const tenant = await this.tenantRepository.findBySlug(slug);
@@ -54,6 +60,26 @@ export class TenantService implements ITenantService {
 	public async updateTenant(id: string, data: UpdateTenantDto) {
 		const { tenantId } = getTenantContext();
 		if (id !== tenantId) throw new Error('Tenant not found or access denied');
-		return this.tenantRepository.update(id, data);
+
+		const oldTenant = await this.tenantRepository.findById(id);
+		const updatedTenant = await this.tenantRepository.update(id, data);
+
+		if (oldTenant && oldTenant.slug !== updatedTenant.slug) {
+			await redis.del(`tenant:slug:${oldTenant.slug}`);
+		}
+
+		// Set new slug directly to ensure it is available immediately if not evicted
+		await redis.set(`tenant:slug:${updatedTenant.slug}`, JSON.stringify(updatedTenant));
+
+		return updatedTenant;
+	}
+
+	public async warmupCache() {
+		const tenants = await this.tenantRepository.findAll();
+		const pipeline = redis.pipeline();
+		for (const tenant of tenants) {
+			pipeline.set(`tenant:slug:${tenant.slug}`, JSON.stringify(tenant));
+		}
+		await pipeline.exec();
 	}
 }
