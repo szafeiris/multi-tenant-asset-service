@@ -32,7 +32,7 @@ export class ReportController implements IReportController {
 				return;
 			}
 
-			if (unit !== 'm' && unit !== 'km' && unit !== 'miles') {
+			if (!['km', 'm', 'miles'].includes(unit)) {
 				res.status(400).json({ error: 'Invalid unit parameter: must be m, km, or miles.' });
 				return;
 			}

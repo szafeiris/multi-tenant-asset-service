@@ -1,7 +1,7 @@
 import { AssetRepository } from '@/repositories/AssetRepository';
 
 export interface IReportService {
-	getAssetsNear(lat: number, lng: number, radius: number, unit: 'km' | 'm' | 'miles'): Promise<unknown>;
+	getAssetsNear(lat: number, lng: number, radius: number, unit: string): Promise<unknown>;
 	getReportByStatus(): Promise<{ count: number; status: string }[]>;
 	getReportByType(): Promise<{ count: number; type: string }[]>;
 	getReportByYear(year: number): Promise<unknown>;
@@ -14,7 +14,7 @@ export class ReportService implements IReportService {
 		this.assetRepository = assetRepository;
 	}
 
-	public async getAssetsNear(lat: number, lng: number, radius: number, unit: 'km' | 'm' | 'miles') {
+	public async getAssetsNear(lat: number, lng: number, radius: number, unit: string) {
 		let maxDistanceKm = radius;
 		if (unit === 'm') {
 			maxDistanceKm = radius / 1000;
