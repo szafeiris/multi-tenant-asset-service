@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY prisma ./prisma
 RUN mkdir logs
-RUN npm install
+RUN --mount=type=cache,target=/root/.npm npm install
 
 # Development stage
 FROM base AS development
@@ -17,12 +17,15 @@ CMD ["npm", "run", "dev"]
 FROM base AS builder
 COPY . .
 RUN npm run build
+# Prune dev dependencies, leaving only production dependencies and the generated Prisma client
+RUN npm prune --omit=dev
 
 # Production stage
 FROM node:22-alpine AS production
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm install --omit=dev
+# Copy pruned node_modules from builder (includes Prisma generated client)
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 
 EXPOSE 9001
