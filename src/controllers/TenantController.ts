@@ -11,7 +11,7 @@ export interface ITenantController {
 	createTenant(req: Request, res: Response): Promise<void>;
 	deleteTenant(req: Request, res: Response): Promise<void>;
 	getTenantById(req: Request, res: Response): Promise<void>;
-	getTenants(req: Request, res: Response): Promise<void>;
+
 	updateTenant(req: Request, res: Response): Promise<void>;
 }
 
@@ -59,16 +59,6 @@ export class TenantController implements ITenantController {
 		} catch (error) {
 			logger.error('Failed to fetch tenant', { error });
 			res.status(500).json({ error: 'Failed to fetch tenant' });
-		}
-	}
-
-	public async getTenants(req: Request, res: Response): Promise<void> {
-		try {
-			const tenants = await this.tenantService.getTenants();
-			res.status(200).json(tenants);
-		} catch (error) {
-			logger.error('Failed to fetch tenants', { error });
-			res.status(500).json({ error: 'Failed to fetch tenants' });
 		}
 	}
 

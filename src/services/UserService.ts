@@ -2,7 +2,8 @@ import type { User } from '@prisma/client';
 
 import type { CreateUserDto, UpdateUserDto } from '@/models/User';
 
-import { getTenantContext } from '@/lib/context/requestContext';
+import { getRequestContext, getTenantContext } from '@/lib/context/requestContext';
+import { getAuditLogger } from '@/lib/logging/logger';
 import { UserRepository } from '@/repositories/UserRepository';
 
 export interface IUserService {
@@ -22,7 +23,10 @@ export class UserService implements IUserService {
 
 	public async createUser(data: CreateUserDto) {
 		const { tenantId } = getTenantContext();
-		return this.userRepository.create({ ...data, tenantId });
+		const user = await this.userRepository.create({ ...data, tenantId });
+		const context = getRequestContext();
+		getAuditLogger().info(`reqId: ${context.requestId}, userId: ${context.userId ?? 'system'}, affected entity: user [${user.id}], action: created`);
+		return user;
 	}
 
 	public async deleteUser(id: string) {
@@ -31,7 +35,10 @@ export class UserService implements IUserService {
 		if (user?.tenantId !== tenantId) {
 			throw new Error('User not found');
 		}
-		return this.userRepository.delete(id);
+		const deletedUser = await this.userRepository.delete(id);
+		const context = getRequestContext();
+		getAuditLogger().info(`reqId: ${context.requestId}, userId: ${context.userId ?? 'system'}, affected entity: user [${deletedUser.id}], action: deleted`);
+		return deletedUser;
 	}
 
 	public async getUserById(id: string) {
@@ -54,6 +61,13 @@ export class UserService implements IUserService {
 		if (user?.tenantId !== tenantId) {
 			throw new Error('User not found');
 		}
-		return this.userRepository.update(id, data);
+		const updatedUser = await this.userRepository.update(id, data);
+		const context = getRequestContext();
+		if (data.role && data.role !== user.role) {
+			getAuditLogger().info(
+				`reqId: ${context.requestId}, userId: ${context.userId ?? 'system'}, affected entity: user [${updatedUser.id}], action: role updated ${user.role} -> ${updatedUser.role}`,
+			);
+		}
+		return updatedUser;
 	}
 }

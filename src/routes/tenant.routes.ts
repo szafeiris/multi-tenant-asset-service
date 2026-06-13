@@ -7,7 +7,6 @@ import { hasRole } from '@/middleware/rbac';
 export default function createTenantRouter(tenantController: ITenantController) {
 	const tenantRouter = Router();
 
-	tenantRouter.get('/', hasRole(['admin', 'editor', 'viewer']), tenantController.getTenants.bind(tenantController));
 	tenantRouter.get('/:id', hasRole(['admin', 'editor', 'viewer']), tenantController.getTenantById.bind(tenantController));
 	tenantRouter.put('/:id', hasRole(['admin']), tenantController.updateTenant.bind(tenantController));
 	tenantRouter.delete('/:id', hasRole(['admin']), tenantController.deleteTenant.bind(tenantController));
