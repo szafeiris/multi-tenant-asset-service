@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
 import { requestContextStorage } from '@/lib/context/requestContext';
+import { formatZodError } from '@/lib/utils';
 import { LoginSchema } from '@/models/Auth';
 import { IAuthService } from '@/services/AuthService';
 
@@ -15,17 +16,26 @@ export class AuthController implements IAuthController {
 	constructor(private readonly authService: IAuthService) {}
 
 	public login = async (req: Request, res: Response): Promise<void> => {
-		const data = LoginSchema.parse(req.body);
-		const result = await this.authService.login(data);
+		try {
+			const data = LoginSchema.parse(req.body);
+			const result = await this.authService.login(data);
 
-		const store = requestContextStorage.getStore();
-		if (store) {
-			store.userId = result.user.id;
-			store.tenantId = result.user.tenantId;
-			store.role = result.user.role;
+			const store = requestContextStorage.getStore();
+			if (store) {
+				store.userId = result.user.id;
+				store.tenantId = result.user.tenantId;
+				store.role = result.user.role;
+			}
+
+			res.status(200).json(result);
+		} catch (error) {
+			const validationError = formatZodError(error);
+			if (validationError) {
+				res.status(400).json({ error: validationError });
+				return;
+			}
+			res.status(400).json({ details: error, error: 'Failed to login' });
 		}
-
-		res.status(200).json(result);
 	};
 
 	public logout = async (req: Request, res: Response): Promise<void> => {

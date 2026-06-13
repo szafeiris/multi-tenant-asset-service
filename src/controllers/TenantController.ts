@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import type { ITenantService } from '@/services/TenantService';
 
 import { getLogger } from '@/lib/logging/logger';
+import { formatZodError } from '@/lib/utils';
 import { CreateTenantSchema, UpdateTenantSchema } from '@/models/Tenant';
 
 const logger = getLogger();
@@ -29,6 +30,11 @@ export class TenantController implements ITenantController {
 			res.status(201).json(tenant);
 		} catch (error) {
 			logger.error('Failed to create tenant', { error });
+			const validationError = formatZodError(error);
+			if (validationError) {
+				res.status(400).json({ error: validationError });
+				return;
+			}
 			res.status(400).json({ details: error, error: 'Failed to create tenant' });
 		}
 	}
@@ -72,6 +78,11 @@ export class TenantController implements ITenantController {
 			res.status(200).json(tenant);
 		} catch (error) {
 			logger.error('Failed to update tenant', { error });
+			const validationError = formatZodError(error);
+			if (validationError) {
+				res.status(400).json({ error: validationError });
+				return;
+			}
 			res.status(400).json({ details: error, error: 'Failed to update tenant' });
 		}
 	}

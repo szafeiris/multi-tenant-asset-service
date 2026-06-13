@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import type { IAssetService } from '@/services/AssetService';
 
 import { getLogger } from '@/lib/logging/logger';
+import { formatZodError } from '@/lib/utils';
 import { CreateAssetSchema, UpdateAssetSchema } from '@/models/Asset';
 
 const logger = getLogger();
@@ -29,6 +30,11 @@ export class AssetController implements IAssetController {
 			res.status(201).json(asset);
 		} catch (error) {
 			logger.error('Failed to create asset', { error });
+			const validationError = formatZodError(error);
+			if (validationError) {
+				res.status(400).json({ error: validationError });
+				return;
+			}
 			res.status(400).json({ details: error, error: 'Failed to create asset' });
 		}
 	}
@@ -92,6 +98,11 @@ export class AssetController implements IAssetController {
 			res.status(200).json(asset);
 		} catch (error) {
 			logger.error('Failed to update asset', { error });
+			const validationError = formatZodError(error);
+			if (validationError) {
+				res.status(400).json({ error: validationError });
+				return;
+			}
 			res.status(400).json({ details: error, error: 'Failed to update asset' });
 		}
 	}

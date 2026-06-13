@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import type { IUserService } from '@/services/UserService';
 
 import { getLogger } from '@/lib/logging/logger';
+import { formatZodError } from '@/lib/utils';
 import { CreateUserSchema, UpdateUserSchema } from '@/models/User';
 
 const logger = getLogger();
@@ -27,8 +28,13 @@ export class UserController implements IUserController {
 			const validatedData = CreateUserSchema.parse(req.body);
 			const user = await this.userService.createUser(validatedData);
 			res.status(201).json(user);
-		} catch (error) {
+		} catch (error: unknown) {
 			logger.error('Failed to create user', { error });
+			const validationError = formatZodError(error);
+			if (validationError) {
+				res.status(400).json({ error: validationError });
+				return;
+			}
 			res.status(400).json({ details: error, error: 'Failed to create user' });
 		}
 	}
@@ -82,6 +88,11 @@ export class UserController implements IUserController {
 			res.status(200).json(user);
 		} catch (error) {
 			logger.error('Failed to update user', { error });
+			const validationError = formatZodError(error);
+			if (validationError) {
+				res.status(400).json({ error: validationError });
+				return;
+			}
 			res.status(400).json({ details: error, error: 'Failed to update user' });
 		}
 	}
