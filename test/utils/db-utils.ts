@@ -134,18 +134,8 @@ import { Asset } from '@/models/Asset';
 
 export async function truncateDatabases() {
 	// Truncate PostgreSQL via Prisma
-	const tableNames = await prisma.$queryRaw<{ tablename: string }[]>`
-		SELECT tablename FROM pg_tables WHERE schemaname='public'
-	`;
-	const tables = tableNames
-		.map(({ tablename }) => tablename)
-		.filter((name) => name !== '_prisma_migrations')
-		.map((name) => `"public"."${name}"`)
-		.join(', ');
-
-	if (tables.length > 0) {
-		await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${tables} CASCADE;`);
-	}
+	await prisma.user.deleteMany();
+	await prisma.tenant.deleteMany();
 
 	// Truncate MongoDB
 	if (mongoose.connection.readyState === mongoose.ConnectionStates.connected) {
