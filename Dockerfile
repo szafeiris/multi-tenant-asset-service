@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY prisma ./prisma
 RUN mkdir logs
-RUN npm install
+RUN --mount=type=cache,target=/root/.npm npm install
 
 # Development stage
 FROM base AS development
@@ -22,7 +22,7 @@ RUN npm run build
 FROM node:22-alpine AS production
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm install --omit=dev
+RUN --mount=type=cache,target=/root/.npm npm install --omit=dev
 COPY --from=builder /app/dist ./dist
 
 EXPOSE 9001
