@@ -1,0 +1,15 @@
+meta {
+  name: Get Report by Status
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/reporting/by-status
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

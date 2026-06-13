@@ -1,0 +1,15 @@
+meta {
+  name: Get Report by Year
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/reporting/year/2022
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
