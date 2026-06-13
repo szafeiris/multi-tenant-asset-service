@@ -5,6 +5,8 @@ COPY package.json package-lock.json* ./
 COPY prisma ./prisma
 RUN mkdir logs
 RUN --mount=type=cache,target=/root/.npm npm install
+# Explicitly generate Prisma client
+RUN npx prisma generate
 
 # Development stage
 FROM base AS development
