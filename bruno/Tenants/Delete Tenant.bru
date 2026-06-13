@@ -1,0 +1,16 @@
+meta {
+  name: Delete Tenant
+  type: http
+  seq: 1
+}
+
+delete {
+  url: {{baseUrl}}/api/tenants/{{tenantId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+

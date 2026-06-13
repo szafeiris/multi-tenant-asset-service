@@ -1,0 +1,21 @@
+meta {
+  name: Update Asset
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/api/assets/asset_id_here
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Updated Asset Name"
+  }
+}

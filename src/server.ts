@@ -1,13 +1,76 @@
-import express from 'express';
+import express, { Express } from 'express';
+import { Logger } from 'winston';
 
-const app = express();
-const port = process.env.PORT ?? '9001';
+import createControllers, { Controllers } from '@/controllers';
+import { config } from '@/lib/configuration';
+import { connectMongoose } from '@/lib/database/mongoose';
+import { prisma } from '@/lib/database/prisma';
+import { getLogger } from '@/lib/logging/logger';
+import { redis } from '@/lib/redis';
+import { errorHandler } from '@/middleware/errorHandler';
+import { requestContextMiddleware } from '@/middleware/requestContextMiddleware';
+import { requestLogger } from '@/middleware/requestLogger';
+import { createRepositories, Repositories } from '@/repositories';
+import createRoutes from '@/routes';
+import createServices, { Services } from '@/services';
 
-app.get('/', (req, res) => {
-	res.send('Hello World!');
-	console.log('Response sent');
-});
+export class Application {
+	private readonly app: Express;
+	private readonly controllers: Controllers;
+	private readonly logger: Logger;
+	private readonly port: number;
+	private readonly repositories: Repositories;
 
-app.listen(port, () => {
-	console.log(`Example app listening on port ${port}`);
-});
+	private readonly services: Services;
+
+	public constructor(port: number = config.server.port) {
+		this.port = port;
+		this.logger = getLogger('application');
+		this.app = express();
+
+		this.app.use(express.json());
+		this.app.use(requestContextMiddleware);
+		this.app.use(requestLogger);
+
+		this.repositories = createRepositories();
+		this.services = createServices(this.repositories);
+		this.controllers = createControllers(this.services);
+		const appRouter = createRoutes(this.controllers);
+
+		this.app.use('/api', appRouter);
+
+		this.app.use(errorHandler);
+	}
+
+	public getApp(): Express {
+		return this.app;
+	}
+
+	public async initializeDatabases() {
+		await connectMongoose();
+
+		await prisma.$connect();
+		this.logger.info('Connected to PostgreSQL');
+
+		await redis.ping();
+		this.logger.info('Connected to Redis');
+	}
+
+	public async start() {
+		try {
+			await this.initializeDatabases();
+
+			this.app.listen(this.port, () => {
+				this.logger.info(`App listening on port ${this.port.toString()}`);
+			});
+		} catch (error: unknown) {
+			this.logger.error('Failed to connect to the database', { error });
+			process.exit(1);
+		}
+	}
+}
+
+if (process.env.NODE_ENV !== 'test') {
+	const application = new Application();
+	void application.start();
+}

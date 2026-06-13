@@ -1,0 +1,21 @@
+meta {
+  name: Update Tenant
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/api/tenants/{{tenantId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Updated Tenant Name"
+  }
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Get Near Assets
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/reporting/near?lat=44.5074&lng=-73.1278&radius=400&unit=km
+  body: none
+  auth: bearer
+}
+
+params:query {
+  lat: 44.5074
+  lng: -73.1278
+  radius: 400
+  unit: km
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

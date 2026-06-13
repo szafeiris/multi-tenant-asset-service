@@ -1,0 +1,23 @@
+meta {
+  name: Create Tenant
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/tenants
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "New Tenant",
+    "slug": "new-tenant",
+    "adminUser": {
+      "name": "Admin User",
+      "email": "admin@example.com",
+      "password": "password"
+    }
+  }
+}
