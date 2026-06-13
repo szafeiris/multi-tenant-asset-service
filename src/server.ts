@@ -9,6 +9,7 @@ import { getLogger } from '@/lib/logging/logger';
 import { redis } from '@/lib/redis';
 import { errorHandler } from '@/middleware/errorHandler';
 import { requestContextMiddleware } from '@/middleware/requestContextMiddleware';
+import { requestLogger } from '@/middleware/requestLogger';
 import { createRepositories, Repositories } from '@/repositories';
 import createRoutes from '@/routes';
 import createServices, { Services } from '@/services';
@@ -29,6 +30,7 @@ export class Application {
 
 		this.app.use(express.json());
 		this.app.use(requestContextMiddleware);
+		this.app.use(requestLogger);
 
 		this.repositories = createRepositories();
 		this.services = createServices(this.repositories);

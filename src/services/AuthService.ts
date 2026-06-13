@@ -24,9 +24,9 @@ export class AuthService implements IAuthService {
 	) {}
 
 	public async login(data: LoginDto): Promise<AuthResponseDto> {
-		const tenant = await this.tenantRepository.findBySlug(data.tenantSlug);
+		const tenant = await this.tenantRepository.findBySlug(data.tenant_slug);
 		if (!tenant) {
-			logger.warn(`Login failed: Tenant not found - ${data.tenantSlug}`);
+			logger.warn(`Login failed: Tenant not found - ${data.tenant_slug}`);
 			throw new UnauthorizedError();
 		}
 
