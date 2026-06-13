@@ -58,6 +58,11 @@ describe('TenantService', () => {
 			const result = await service.createTenant(mockData);
 
 			expect(tenantRepository.create).toHaveBeenCalledWith(mockData);
+
+			// Expect redis.set to have been called to cache the new tenant eagerly
+			const { redis } = await import('@/lib/redis');
+			expect(redis.set).toHaveBeenCalledWith('tenant:slug:tenant', JSON.stringify(createdTenant));
+
 			expect(mockAuditLogger.info).toHaveBeenCalledWith('reqId: req-1, userId: admin-1, affected entity: tenant [tenant-2], action: created');
 			expect(result).toEqual(createdTenant);
 		});

@@ -5,7 +5,7 @@ import type { CreateTenantDto, UpdateTenantDto } from '@/models/Tenant';
 import { getRequestContext, getTenantContext } from '@/lib/context/requestContext';
 import { getAuditLogger } from '@/lib/logging/logger';
 import { redis } from '@/lib/redis';
-import { Cacheable, CacheEvict } from '@/lib/redis/cache';
+import { Cacheable } from '@/lib/redis/cache';
 import { TenantRepository } from '@/repositories/TenantRepository';
 
 export interface ITenantService {
@@ -25,19 +25,20 @@ export class TenantService implements ITenantService {
 		this.tenantRepository = tenantRepository;
 	}
 
-	@CacheEvict({ key: (_args: unknown[], result?: { slug?: string }) => `tenant:slug:${result?.slug ?? ''}` })
 	public async createTenant(data: CreateTenantDto) {
 		const tenant = await this.tenantRepository.create(data);
+		await redis.set(`tenant:slug:${tenant.slug}`, JSON.stringify(tenant));
+
 		const context = getRequestContext();
 		getAuditLogger().info(`reqId: ${context.requestId}, userId: ${context.userId ?? 'system'}, affected entity: tenant [${tenant.id}], action: created`);
 		return tenant;
 	}
 
-	@CacheEvict({ key: (_args: unknown[], result?: { slug?: string }) => `tenant:slug:${result?.slug ?? ''}` })
 	public async deleteTenant(id: string) {
 		const { tenantId } = getTenantContext();
 		if (id !== tenantId) throw new Error('Tenant not found or access denied');
 		const tenant = await this.tenantRepository.delete(id);
+		await redis.del(`tenant:slug:${tenant.slug}`);
 		const context = getRequestContext();
 		getAuditLogger().info(`reqId: ${context.requestId}, userId: ${context.userId ?? 'system'}, affected entity: tenant [${tenant.id}], action: deleted`);
 		return tenant;
@@ -68,7 +69,6 @@ export class TenantService implements ITenantService {
 			await redis.del(`tenant:slug:${oldTenant.slug}`);
 		}
 
-		// Set new slug directly to ensure it is available immediately if not evicted
 		await redis.set(`tenant:slug:${updatedTenant.slug}`, JSON.stringify(updatedTenant));
 
 		return updatedTenant;
