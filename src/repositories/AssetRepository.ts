@@ -25,6 +25,15 @@ export class AssetRepository {
 		return Asset.findOne({ id, tenant_id: tenantId }).exec();
 	}
 
+	public async getAssetsInBoundingBox(minLat: number, maxLat: number, minLng: number, maxLng: number): Promise<IAsset[]> {
+		const { tenantId } = getTenantContext();
+		return Asset.find({
+			lat: { $gte: minLat, $lte: maxLat },
+			lng: { $gte: minLng, $lte: maxLng },
+			tenant_id: tenantId,
+		}).exec();
+	}
+
 	public async getReportByStatus(): Promise<{ _id: string; count: number }[]> {
 		const { tenantId } = getTenantContext();
 		return Asset.aggregate([{ $match: { tenant_id: tenantId } }, { $group: { _id: '$status', count: { $sum: 1 } } }]).exec() as Promise<{ _id: string; count: number }[]>;
